@@ -21,14 +21,14 @@ class AuthController extends Controller
         if (RateLimiter::tooManyAttempts($key, 5)) {
             throw ValidationException::withMessages(['email' => 'Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau '.RateLimiter::availableIn($key).' giây.']);
         }
-        if (! Auth::attempt([...$data, 'active' => true], $request->boolean('remember'))) {
+        if (! Auth::attempt([...$data, 'active' => true, 'archived_at' => null], $request->boolean('remember'))) {
             RateLimiter::hit($key, 60);
-            throw ValidationException::withMessages(['email' => 'Email hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa.']);
+            throw ValidationException::withMessages(['email' => 'Email hoặc mật khẩu không đúng, hoặc tài khoản chưa được duyệt/đã bị khóa.']);
         }
         RateLimiter::clear($key);
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route($request->user()->landingRoute()));
     }
 
     public function logout(Request $request)

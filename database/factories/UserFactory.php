@@ -26,6 +26,8 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
+            'permissions' => ['dashboard', 'requests', 'calendar', 'approvals', 'reports', 'library'],
+            'view_all_units' => fn (array $attributes) => in_array($attributes['role'] ?? 'staff', ['office', 'director']),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

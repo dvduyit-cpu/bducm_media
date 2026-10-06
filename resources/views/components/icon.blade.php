@@ -11,6 +11,8 @@
 @case('settings')<path d="m9 3-1 3-3 1-2 4 2 2v4l4 3 3-1 3 1 4-3v-4l2-2-2-4-3-1-1-3Z"/><circle cx="12" cy="12" r="3"/>@break
 @case('bell')<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>@break
 @case('plus')<path d="M12 5v14M5 12h14"/>@break
+@case('sidebar')<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>@break
+@case('home')<path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8"/>@break
 @case('menu')<path d="M4 6h16M4 12h16M4 18h16"/>@break
 @case('arrow')<path d="M5 12h14m-5-5 5 5-5 5"/>@break
 @case('download')<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>@break

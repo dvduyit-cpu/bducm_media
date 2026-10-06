@@ -33,9 +33,9 @@ try {
 
     $application = require $root.'/bootstrap/app.php';
     $application->make(Kernel::class)->bootstrap();
-    if (! User::where('role', 'office')->exists()) {
+    if (! User::where('role', 'admin')->whereNull('archived_at')->where('active', true)->exists()) {
         if (! filter_var($environment['ADMIN_EMAIL'] ?? '', FILTER_VALIDATE_EMAIL) || strlen($environment['ADMIN_PASSWORD'] ?? '') < 10) {
-            fwrite(STDERR, "Chưa có tài khoản VP BGĐ. Đặt ADMIN_EMAIL và ADMIN_PASSWORD (ít nhất 10 ký tự) trong .env rồi chạy lại composer run deploy.\n");
+            fwrite(STDERR, "Chưa có tài khoản Admin. Đặt ADMIN_EMAIL và ADMIN_PASSWORD (ít nhất 10 ký tự) trong .env rồi chạy lại composer run deploy.\n");
             exit(1);
         }
         runDeploymentCommand($root, ['db:seed', '--class=DatabaseSeeder', '--force']);

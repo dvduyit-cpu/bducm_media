@@ -28,7 +28,7 @@ enum RequestStatus: string
             self::Received => 'VP BGĐ tiếp nhận', self::NeedsInfo => 'Yêu cầu bổ sung', self::Ready => 'Đã đủ thông tin',
             self::AwaitingAssignment => 'Chờ phân công', self::Assigned => 'Đã phân công', self::InProgress => 'Đang thực hiện',
             self::PendingApproval => 'Chờ duyệt', self::Revision => 'Yêu cầu chỉnh sửa', self::Approved => 'Đã duyệt',
-            self::Published => 'Đã đăng', self::Completed => 'Hoàn thành', self::OnHold => 'Tạm hoãn', self::Cancelled => 'Hủy',
+            self::Published => 'Đã đăng', self::Completed => 'Đã đóng', self::OnHold => 'Tạm hoãn', self::Cancelled => 'Đã hủy',
         };
     }
 

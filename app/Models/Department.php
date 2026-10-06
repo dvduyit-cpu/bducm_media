@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Department extends Model
 {
@@ -16,5 +17,10 @@ class Department extends Model
     public function requests()
     {
         return $this->hasMany(MediaRequest::class);
+    }
+
+    public function supportedRequests(): BelongsToMany
+    {
+        return $this->belongsToMany(MediaRequest::class, 'department_media_request')->withTimestamps();
     }
 }

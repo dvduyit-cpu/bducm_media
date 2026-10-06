@@ -18,6 +18,8 @@ class MediaManagementTest extends TestCase
 
     private Department $unit;
 
+    private User $admin;
+
     private User $office;
 
     private User $director;
@@ -31,6 +33,7 @@ class MediaManagementTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->admin = User::factory()->create(['role' => 'admin']);
         $this->unit = Department::create(['name' => 'Đào tạo', 'code' => 'DT']);
         foreach (['office', 'director', 'head', 'staff', 'media'] as $role) {
             $this->{$role} = User::factory()->create(['role' => $role, 'department_id' => in_array($role, ['head', 'staff']) ? $this->unit->id : null]);
@@ -57,11 +60,11 @@ class MediaManagementTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_all_pages_render_for_office(): void
+    public function test_all_pages_render_for_admin(): void
     {
         $item = $this->item();
-        foreach (['/', '/requests', '/requests/create', '/requests/'.$item->id, '/requests/'.$item->id.'/edit', '/calendar', '/approvals', '/reports', '/library', '/notifications', '/settings', '/users', '/departments'] as $path) {
-            $this->actingAs($this->office)->get($path)->assertOk();
+        foreach (['/', '/requests', '/requests/create', '/requests/'.$item->id, '/requests/'.$item->id.'/edit', '/calendar', '/approvals', '/reports', '/library', '/notifications', '/help', '/settings', '/users', '/departments'] as $path) {
+            $this->actingAs($this->admin)->get($path)->assertOk();
         }
         $this->get('/reports?export=1')->assertOk()->assertDownload();
     }
@@ -93,49 +96,41 @@ class MediaManagementTest extends TestCase
         $this->post('/requests', array_replace($payload, ['department_id' => $other->id, 'contact_id' => $otherHead->id]))->assertForbidden();
     }
 
-    public function test_full_workflow_requires_internal_and_professional_approval(): void
+    public function test_full_workflow_goes_directly_to_office_and_only_office_can_close(): void
     {
+        $this->freezeTime();
         $item = $this->item();
-        $this->move($item, $this->staff, 'submitted')->assertForbidden();
-        foreach ([[$this->staff, 'internal_review'], [$this->head, 'submitted'], [$this->office, 'received'], [$this->office, 'ready'], [$this->office, 'awaiting_assignment']] as [$user, $target]) {
-            $this->move($item, $user, $target)->assertRedirect();
-        }
-        $this->move($item, $this->office, 'assigned', ['assignee_id' => $this->staff->id])->assertSessionHasErrors('assignee_id');
-        $this->move($item, $this->office, 'assigned', ['assignee_id' => $this->media->id])->assertRedirect();
-        $this->move($item, $this->media, 'in_progress')->assertRedirect();
-        $this->move($item, $this->media, 'pending_approval')->assertSessionHasErrors('target');
-        $this->actingAs($this->media)->post(route('requests.progress', $item), ['progress' => 90, 'product_notes' => 'Bài viết hoàn chỉnh', 'note' => 'Đã bàn giao'])->assertRedirect();
-        $this->move($item, $this->media, 'pending_approval')->assertRedirect();
-        $this->move($item, $this->office, 'approved')->assertForbidden();
-        $this->move($item, $this->head, 'professional_check')->assertRedirect();
-        $this->move($item, $this->office, 'approved')->assertRedirect();
-        $this->move($item, $this->media, 'published')->assertSessionHasErrors('published_url');
-        $this->move($item, $this->media, 'published', ['published_url' => 'https://example.com/news'])->assertRedirect();
-        $this->move($item, $this->media, 'completed')->assertRedirect();
+        $this->move($item, $this->staff, 'submitted')->assertRedirect()->assertSessionHasNoErrors();
+        $this->move($item, $this->head, 'approved', ['coordination_mode' => 'autonomous'])->assertForbidden();
+        $this->move($item, $this->office, 'approved', ['coordination_mode' => 'autonomous'])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame($this->office->id, $item->fresh()->approved_by);
+        $this->move($item, $this->staff, 'in_progress')->assertRedirect();
+        $this->actingAs($this->staff)->post(route('requests.progress', $item), ['progress' => 100, 'product_notes' => 'Đã tổ chức xong', 'note' => 'Kết quả thực hiện'])->assertRedirect();
+        $this->assertSame(S::InProgress, $item->fresh()->status);
+        $this->move($item, $this->staff, 'completed')->assertForbidden();
+        $this->move($item, $this->office, 'completed')->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame(S::Completed, $item->fresh()->status);
-        $this->assertSame(100, $item->fresh()->progress);
-        $this->assertEquals(13, $item->histories()->count());
+        $this->assertNotNull($item->fresh()->completed_at);
+        $this->assertSame(5, $item->histories()->count());
         $this->assertGreaterThan(0, $this->head->notifications()->count());
     }
 
-    public function test_important_content_requires_director_and_revision_clears_check(): void
+    public function test_office_approves_every_event_and_director_is_read_only(): void
     {
-        $item = $this->item(['status' => 'pending_approval', 'important' => true, 'professional_checked_by' => $this->head->id, 'assignee_id' => $this->media->id]);
-        $this->move($item, $this->office, 'approved')->assertForbidden();
-        $this->move($item, $this->director, 'revision')->assertRedirect();
-        $this->assertNull($item->fresh()->professional_checked_by);
-        $item->refresh()->update(['status' => 'pending_approval', 'professional_checked_by' => $this->head->id]);
-        $this->move($item, $this->director, 'approved')->assertRedirect();
+        $item = $this->item(['status' => 'submitted', 'important' => true]);
+        $this->move($item, $this->director, 'approved', ['coordination_mode' => 'autonomous'])->assertForbidden();
+        $this->move($item, $this->office, 'approved', ['coordination_mode' => 'autonomous'])->assertRedirect()->assertSessionHasNoErrors();
         $this->assertSame(S::Approved, $item->fresh()->status);
     }
 
-    public function test_cannot_skip_approval_or_modify_approved_product(): void
+    public function test_cannot_skip_office_approval_or_change_a_closed_event(): void
     {
-        $item = $this->item(['status' => 'in_progress', 'assignee_id' => $this->media->id]);
-        $this->move($item, $this->media, 'published', ['published_url' => 'https://example.com'])->assertForbidden();
-        $item->update(['status' => 'approved']);
-        $this->actingAs($this->office)->post(route('requests.progress', $item), ['progress' => 90, 'product_notes' => 'Thay đổi sau duyệt', 'note' => 'Sửa'])->assertForbidden();
-        $this->post(route('requests.upload', $item), ['kind' => 'product', 'file' => UploadedFile::fake()->create('product.pdf', 10, 'application/pdf')])->assertForbidden();
+        $item = $this->item(['status' => 'submitted']);
+        $this->move($item, $this->staff, 'in_progress')->assertForbidden();
+        $this->move($item, $this->office, 'completed')->assertForbidden();
+        $item->update(['status' => 'completed', 'completed_at' => now()]);
+        $this->actingAs($this->office)->post(route('requests.progress', $item), ['progress' => 90, 'note' => 'Thay đổi'])->assertForbidden();
+        $this->post(route('requests.coordinate', $item), ['coordination_mode' => 'autonomous', 'note' => 'Thay đổi'])->assertUnprocessable();
     }
 
     public function test_source_and_product_uploads_are_private_and_audited(): void
@@ -172,7 +167,7 @@ class MediaManagementTest extends TestCase
     public function test_user_creation_requires_password_and_department_for_staff(): void
     {
         $data = ['name' => 'New Staff', 'email' => 'new@example.com', 'role' => 'staff', 'active' => 1];
-        $this->actingAs($this->office)->post('/users', $data)->assertSessionHasErrors(['password', 'department_id']);
+        $this->actingAs($this->admin)->post('/users', $data)->assertSessionHasErrors(['password', 'department_id']);
         $this->post('/users', [...$data, 'password' => 'ValidPassword123!', 'department_id' => $this->unit->id])->assertRedirect();
         $this->assertDatabaseHas('users', ['email' => 'new@example.com', 'role' => 'staff']);
     }
@@ -188,9 +183,9 @@ class MediaManagementTest extends TestCase
 
     public function test_all_roles_can_render_their_visible_pages(): void
     {
-        $item = $this->item(['status' => 'pending_approval', 'assignee_id' => $this->media->id]);
+        $item = $this->item(['status' => 'approved', 'assignee_id' => $this->media->id]);
         foreach ([$this->director, $this->head, $this->staff, $this->media] as $user) {
-            foreach (['/', '/requests', '/requests/'.$item->id, '/calendar', '/approvals', '/reports', '/library', '/settings'] as $path) {
+            foreach (['/', '/requests', '/requests/'.$item->id, '/calendar', '/reports', '/library', '/settings'] as $path) {
                 $this->actingAs($user)->get($path)->assertOk();
             }
         }

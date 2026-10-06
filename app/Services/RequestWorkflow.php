@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Enums\RequestStatus as S;
-use App\Enums\Role;
 use App\Models\MediaRequest;
 use App\Models\User;
 use App\Notifications\RequestUpdated;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class RequestWorkflow
@@ -15,58 +17,21 @@ class RequestWorkflow
     public function actions(MediaRequest $item, User $user): array
     {
         $actions = [];
-        $sameUnit = $user->department_id === $item->department_id;
-        if ($sameUnit && ($user->role === Role::Head || $user->id === $item->creator_id)) {
-            if ($item->status === S::Draft) {
-                $actions[$user->role === Role::Head ? 'submitted' : 'internal_review'] = $user->role === Role::Head ? 'Duyệt nội bộ và gửi VP BGĐ' : 'Trình trưởng đơn vị';
-            }
-            if ($item->status === S::NeedsInfo) {
-                $actions['submitted'] = 'Gửi thông tin bổ sung';
-            }
+        if ($item->canEdit($user)) {
+            $actions['submitted'] = 'Gửi Văn phòng BGĐ';
         }
-        if ($sameUnit && $user->role === Role::Head && $item->status === S::InternalReview) {
-            $actions += ['submitted' => 'Duyệt và gửi VP BGĐ', 'draft' => 'Trả lại bản nháp'];
-        }
-        if ($user->isOffice()) {
+        if ($user->canReview()) {
             $actions += match ($item->status) {
-                S::Draft => ['submitted' => 'Gửi yêu cầu đến VP BGĐ'],
-                S::InternalReview => ['submitted' => 'Tiếp nhận thay đơn vị'],
-                S::Submitted => ['received' => 'Tiếp nhận yêu cầu'],
-                S::Received => ['needs_info' => 'Yêu cầu bổ sung', 'ready' => 'Xác nhận đủ thông tin'],
-                S::Ready => ['awaiting_assignment' => 'Đưa vào kế hoạch'],
-                S::AwaitingAssignment => ['assigned' => 'Phân công thực hiện'],
-                S::Assigned => ['in_progress' => 'Bắt đầu thực hiện'],
-                S::InProgress, S::Revision => ['pending_approval' => 'Nộp sản phẩm để duyệt'],
-                S::PendingApproval => ['revision' => 'Yêu cầu chỉnh sửa'],
-                S::Approved => ['published' => 'Xác nhận đã đăng'],
-                S::Published => ['completed' => 'Hoàn thành và lưu trữ'],
-                S::OnHold => ['received' => 'Tiếp tục xử lý'], default => [],
+                S::Submitted => ['approved' => 'Duyệt sự kiện & chọn phương án', 'needs_info' => 'Yêu cầu bổ sung'],
+                S::Approved => ['in_progress' => 'Bắt đầu thực hiện', 'completed' => 'Đóng sự kiện'],
+                S::InProgress => ['completed' => 'Đóng sự kiện'],
+                S::OnHold => ['submitted' => 'Tiếp tục kiểm tra'], default => [],
             };
-            if (! in_array($item->status, [S::Draft, S::InternalReview, S::Completed, S::Cancelled, S::OnHold, S::Published])) {
-                $actions['on_hold'] = 'Tạm hoãn';
+            if (! in_array($item->status, [S::Completed, S::Cancelled])) {
+                $actions['cancelled'] = 'Hủy sự kiện';
             }
-            if (! in_array($item->status, [S::Completed, S::Cancelled, S::Published])) {
-                $actions['cancelled'] = 'Hủy yêu cầu';
-            }
-        }
-        if ($user->role === Role::Media && $item->assignee_id === $user->id) {
-            $actions += match ($item->status) {
-                S::Assigned => ['in_progress' => 'Bắt đầu thực hiện'],
-                S::InProgress, S::Revision => ['pending_approval' => 'Nộp sản phẩm để duyệt'],
-                S::Approved => ['published' => 'Xác nhận đã đăng'],
-                S::Published => ['completed' => 'Xác nhận hoàn thành'], default => [],
-            };
-        }
-        if ($item->status === S::PendingApproval && $sameUnit && $user->role === Role::Head && ! $item->professional_checked_by) {
-            $actions['professional_check'] = 'Xác nhận nội dung chuyên môn';
-        }
-        if ($item->status === S::PendingApproval && $item->professional_checked_by) {
-            if (($item->important && $user->role === Role::Director) || (! $item->important && $user->isOffice())) {
-                $actions['approved'] = 'Phê duyệt sản phẩm';
-            }
-        }
-        if ($item->status === S::PendingApproval && $item->important && $user->role === Role::Director) {
-            $actions['revision'] = 'Yêu cầu chỉnh sửa';
+        } elseif ($item->status === S::Approved && $item->canCollaborate($user)) {
+            $actions['in_progress'] = 'Bắt đầu thực hiện';
         }
 
         return $actions;
@@ -79,54 +44,72 @@ class RequestWorkflow
             $actions = $this->actions($item, $user);
             $target = $data['target'];
             abort_unless(isset($actions[$target]), 403, 'Bạn không có quyền thực hiện thao tác này.');
-            $note = $data['note'] ?? null;
-            if (in_array($target, ['needs_info', 'revision', 'on_hold', 'cancelled', 'draft']) && ! $note) {
-                throw ValidationException::withMessages(['note' => 'Vui lòng ghi rõ lý do hoặc nội dung cần bổ sung.']);
-            }
+            $data = Validator::make($data, ['note' => [Rule::requiredIf(in_array($target, ['needs_info', 'cancelled', 'completed'])), 'nullable', 'string', 'max:5000']])->validate() + $data;
             $before = $item->status->value;
-            if ($target === 'assigned') {
-                $assignee = User::where('active', true)->where('role', Role::Media->value)->find($data['assignee_id'] ?? null);
-                if (! $assignee) {
-                    throw ValidationException::withMessages(['assignee_id' => 'Chọn nhân sự truyền thông đang hoạt động.']);
-                }
-                $item->assignee_id = $assignee->id;
-            }
-            if ($target === 'pending_approval' && ! $item->attachments()->where('kind', 'product')->exists() && ! $item->product_notes) {
-                throw ValidationException::withMessages(['target' => 'Hãy nộp tệp sản phẩm hoặc nội dung sản phẩm trước khi trình duyệt.']);
-            }
-            if ($target === 'professional_check') {
-                $item->professional_checked_by = $user->id;
-            } else {
-                $item->status = S::from($target);
+            if ($target === 'approved') {
+                $this->setCoordination($item, $data);
+                $item->approved_by = $user->id;
+                $item->approved_at = now();
             }
             if ($target === 'submitted') {
                 $item->submitted_at ??= now();
             }
-            if ($target === 'revision') {
-                $item->professional_checked_by = null;
-            }
-            if ($target === 'published') {
-                if (empty($data['published_url'])) {
-                    throw ValidationException::withMessages(['published_url' => 'Cần đường dẫn nội dung đã đăng.']);
-                }
-                $item->published_url = $data['published_url'];
-            }
             if ($target === 'completed') {
-                $item->progress = 100;
                 $item->completed_at = now();
+                $item->progress = 100;
             }
+            $item->status = S::from($target);
             $item->save();
-            $item->histories()->create(['user_id' => $user->id, 'action' => $actions[$target], 'from_status' => $before, 'to_status' => $item->status->value, 'note' => $note]);
-            $recipients = User::where('active', true)->where(function ($q) use ($item) {
-                $q->whereIn('id', array_filter([$item->creator_id, $item->contact_id, $item->assignee_id]))
-                    ->orWhere('role', 'office')->orWhere(fn ($q) => $q->where('role', 'head')->where('department_id', $item->department_id));
-                if ($item->important && $item->status === S::PendingApproval) {
-                    $q->orWhere('role', 'director');
-                }
-            })->where('id', '!=', $user->id)->get();
-            foreach ($recipients as $recipient) {
-                $recipient->notify(new RequestUpdated($item, $actions[$target]));
+            $note = $data['note'] ?? '';
+            if ($target === 'approved') {
+                $note .= ' | '.$item->modeLabel().' | Hỗ trợ: '.($item->supportDepartments()->pluck('name')->implode(', ') ?: 'Không');
             }
+            $item->histories()->create(['user_id' => $user->id, 'action' => $actions[$target], 'from_status' => $before, 'to_status' => $target, 'note' => $note]);
+            $this->notifyParticipants($item, $user, $actions[$target]);
         });
+    }
+
+    public function coordinate(MediaRequest $item, User $user, array $data): void
+    {
+        abort_unless($user->canReview(), 403);
+        DB::transaction(function () use ($item, $user, $data) {
+            $item = MediaRequest::whereKey($item->id)->lockForUpdate()->firstOrFail();
+            abort_unless(in_array($item->status, [S::Approved, S::InProgress]), 422, 'Chỉ thay đổi phối hợp với sự kiện đã duyệt và chưa đóng.');
+            $validated = Validator::make($data, ['note' => 'required|string|max:5000'])->validate();
+            $this->setCoordination($item, $data);
+            $item->save();
+            $item->histories()->create(['user_id' => $user->id, 'action' => 'Cập nhật phương án phối hợp', 'note' => $validated['note'].' | '.$item->modeLabel().' | Hỗ trợ: '.($item->supportDepartments()->pluck('name')->implode(', ') ?: 'Không')]);
+            $this->notifyParticipants($item, $user, 'Phương án phối hợp đã cập nhật');
+        });
+    }
+
+    private function setCoordination(MediaRequest $item, array $data): void
+    {
+        $data = Validator::make($data, ['coordination_mode' => 'required|in:autonomous,support',
+            'support_department_ids' => 'nullable|array|max:50', 'support_department_ids.*' => ['required', 'integer', 'distinct', Rule::exists('departments', 'id'), Rule::notIn([$item->department_id])],
+            'support_notes' => 'nullable|string|max:5000', 'due_at' => 'nullable|date'])->validate();
+        $ids = $data['support_department_ids'] ?? [];
+        if ($data['coordination_mode'] === 'support' && ! $ids) {
+            throw ValidationException::withMessages(['support_department_ids' => 'Chọn ít nhất một phòng ban hỗ trợ khác đơn vị chủ trì.']);
+        }
+        if (! empty($data['due_at']) && Carbon::parse($data['due_at'])->lt($item->event_at)) {
+            throw ValidationException::withMessages(['due_at' => 'Hạn thực hiện không được trước thời gian bắt đầu sự kiện.']);
+        }
+        $item->coordination_mode = $data['coordination_mode'];
+        $item->support_notes = $data['support_notes'] ?? null;
+        $item->due_at = $data['due_at'] ?? $item->event_ends_at ?? $item->event_at;
+        $item->supportDepartments()->sync($data['coordination_mode'] === 'support' ? $ids : []);
+        $item->unsetRelation('supportDepartments');
+    }
+
+    public function notifyParticipants(MediaRequest $item, User $actor, string $message): void
+    {
+        $units = [$item->department_id, ...$item->supportDepartments()->pluck('departments.id')->all()];
+        $recipients = User::where('active', true)->where('id', '!=', $actor->id)->where(function ($q) use ($item, $units) {
+            $q->whereIn('role', ['admin', 'office'])->orWhere('reviewer_access', true)->orWhereIn('department_id', $units)->orWhereIn('id', array_filter([$item->assignee_id, $item->media_assignee_id]));
+        })->get()->filter(fn (User $recipient) => $item->canNotify($recipient));
+        foreach ($recipients as $recipient) {
+            $recipient->notify(new RequestUpdated($item, $message));
+        }
     }
 }

@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
 
             return;
         }
-        User::firstOrCreate(['email' => $email], ['name' => 'Quản trị Văn phòng BGĐ', 'password' => $password, 'role' => 'office', 'active' => true]);
+        if (User::where('role', 'admin')->exists()) {
+            return;
+        }
+        User::firstOrCreate(['email' => $email], ['name' => 'Admin tổng', 'password' => $password, 'role' => 'admin', 'active' => true]);
     }
 }

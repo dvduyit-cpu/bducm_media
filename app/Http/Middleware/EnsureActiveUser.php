@@ -10,7 +10,7 @@ class EnsureActiveUser
 {
     public function handle(Request $request, Closure $next)
     {
-        if (! $request->user()?->active) {
+        if (! $request->user()?->active || $request->user()?->archived_at !== null) {
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
