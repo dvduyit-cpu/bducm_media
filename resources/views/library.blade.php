@@ -1,0 +1,7 @@
+@extends('layouts.app')
+@section('title','Kho truyền thông')
+@section('content')
+<div class="page-heading"><div><div class="eyebrow">TÀI LIỆU & SẢN PHẨM</div><h1>Kho truyền thông</h1><p>Lưu trữ tập trung, truy cập tài liệu theo phân quyền đơn vị và nhiệm vụ.</p></div></div>
+@include('partials.filters')
+<div class="library-grid">@forelse($items as $item)<section class="panel"><div class="panel-heading"><div><span class="eyebrow">{{ $item->code }} · {{ $item->department->code }}</span><h2><a href="{{ route('requests.show',$item) }}">{{ $item->title }}</a></h2></div><x-icon name="folder"/></div><div class="panel-body attachment-list">@foreach($item->attachments as $file)<a class="attachment" href="{{ route('attachments.download',$file) }}"><div><strong>{{ $file->name }}</strong><small>{{ $file->kind==='product' ? 'Sản phẩm' : 'Tài liệu' }} · {{ number_format($file->size/1024,1) }} KB</small></div><x-icon name="download" size="18"/></a>@endforeach</div></section>@empty<div class="panel empty-state"><x-icon name="folder" size="40"/><strong>Kho tài liệu đang trống</strong><p>Thêm tệp từ trang chi tiết yêu cầu truyền thông.</p></div>@endforelse</div><div class="pagination-wrap">{{ $items->links('partials.pagination') }}</div>
+@endsection
