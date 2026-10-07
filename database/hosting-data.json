@@ -1,0 +1,379 @@
+{
+    "access_roles": [
+        {
+            "id": 1,
+            "code": "admin",
+            "name": "Admin",
+            "base_role": "admin",
+            "permissions": "[\"dashboard\", \"requests\", \"calendar\", \"approvals\", \"reports\", \"library\"]",
+            "created_at": "2026-10-06 15:44:38",
+            "updated_at": "2026-10-06 15:49:07"
+        },
+        {
+            "id": 2,
+            "code": "director",
+            "name": "Ban Giám đốc",
+            "base_role": "director",
+            "permissions": "[\"dashboard\", \"requests\", \"calendar\", \"approvals\", \"reports\", \"library\"]",
+            "created_at": "2026-10-06 15:44:38",
+            "updated_at": "2026-10-06 15:44:38"
+        },
+        {
+            "id": 3,
+            "code": "office",
+            "name": "Văn phòng BGĐ",
+            "base_role": "office",
+            "permissions": "[\"dashboard\", \"requests\", \"calendar\", \"approvals\", \"reports\", \"library\"]",
+            "created_at": "2026-10-06 15:44:38",
+            "updated_at": "2026-10-06 15:44:38"
+        },
+        {
+            "id": 4,
+            "code": "head",
+            "name": "Trưởng đơn vị",
+            "base_role": "head",
+            "permissions": "[\"dashboard\", \"requests\", \"calendar\", \"approvals\", \"reports\", \"library\"]",
+            "created_at": "2026-10-06 15:44:38",
+            "updated_at": "2026-10-06 15:44:38"
+        },
+        {
+            "id": 5,
+            "code": "staff",
+            "name": "Nhân viên đơn vị",
+            "base_role": "staff",
+            "permissions": "[\"dashboard\", \"requests\", \"calendar\", \"approvals\", \"reports\", \"library\"]",
+            "created_at": "2026-10-06 15:44:38",
+            "updated_at": "2026-10-06 15:44:38"
+        },
+        {
+            "id": 6,
+            "code": "media",
+            "name": "Nhân sự truyền thông",
+            "base_role": "media",
+            "permissions": "[\"dashboard\", \"requests\", \"calendar\", \"approvals\", \"reports\", \"library\"]",
+            "created_at": "2026-10-06 15:44:38",
+            "updated_at": "2026-10-06 15:44:38"
+        }
+    ],
+    "departments": [
+        {
+            "id": 6,
+            "name": "Ban giám đốc Phân hiệu/Ban Lãnh đạo Phân hiệu",
+            "code": "BGD",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 7,
+            "name": "Văn phòng Ban Giám đốc",
+            "code": "VPBGD",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 8,
+            "name": "Phòng Hành chính - Tổng hợp",
+            "code": "HCTH",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 9,
+            "name": "Phòng Tài chính - Kế toán",
+            "code": "TCKT",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 10,
+            "name": "Phòng Tuyển sinh",
+            "code": "TS",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 11,
+            "name": "Phòng Đào tạo - Khảo thí và Bảo đảm chất lượng",
+            "code": "DTKTBDCL",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 12,
+            "name": "Phòng Công tác sinh viên và Đoàn Hội",
+            "code": "CTSV-DH",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 13,
+            "name": "Trung tâm Ngoại ngữ và Tin học",
+            "code": "TTNNTH",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 14,
+            "name": "Phòng Quan hệ doanh nghiệp và Khởi nghiệp",
+            "code": "QHDNKN",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        },
+        {
+            "id": 15,
+            "name": "Phòng Quản lý khoa học và Chuyển đổi số",
+            "code": "QLKHCDS",
+            "created_at": "2026-10-06 15:37:32",
+            "updated_at": "2026-10-06 15:37:32"
+        }
+    ],
+    "users": [
+        {
+            "id": 9,
+            "name": "Admin",
+            "email": "admin@bdu.local",
+            "email_verified_at": null,
+            "password": "$2y$12$00lx1y6C3vmMCbthV2uXoOtHkdnhUTdEJi.Dyw0EwMVyBE/rdIL9u",
+            "remember_token": "KCEhseP9NOveGTABYXlIckDCJJgZaaLZ7zTGCXiqWVY1z4mc64tTB5V2IJHM",
+            "created_at": "2026-10-06 15:06:01",
+            "updated_at": "2026-10-06 16:28:09",
+            "department_id": null,
+            "role": "admin",
+            "active": 1,
+            "theme_color": "#166534",
+            "board_preferences": "{\"columns\": {\"draft\": {\"color\": \"#64748b\", \"title\": \"Bản nháp\"}, \"approved\": {\"color\": \"#2563eb\", \"title\": \"Đã duyệt\"}, \"completed\": {\"color\": \"#15803d\", \"title\": \"Đã đóng\"}, \"submitted\": {\"color\": \"#e89b12\", \"title\": \"Chờ VP duyệt\"}, \"in_progress\": {\"color\": \"#7c3aed\", \"title\": \"Đang thực hiện\"}}, \"background\": \"#eef2f7\"}",
+            "font_family": "system",
+            "font_size": 16,
+            "registration_pending": 0,
+            "loading_style": "center",
+            "permissions": "[]",
+            "view_all_units": 0,
+            "archived_at": null,
+            "archived_email": null,
+            "access_role_id": 1,
+            "reviewer_access": 0
+        },
+        {
+            "id": 10,
+            "name": "Đặng Việt Duy",
+            "email": "dvduy.cm@bdu.edu.vn",
+            "email_verified_at": null,
+            "password": "$2y$12$s/CFC2kJz1XFqFu6ekFi3.zE0qy5BCUfwZx8Uc02X69DqWFu0lYNO",
+            "remember_token": null,
+            "created_at": "2026-10-06 15:54:42",
+            "updated_at": "2026-10-06 15:54:42",
+            "department_id": 13,
+            "role": "staff",
+            "active": 1,
+            "theme_color": null,
+            "board_preferences": null,
+            "font_family": "system",
+            "font_size": 16,
+            "registration_pending": 0,
+            "loading_style": "center",
+            "permissions": "[\"dashboard\", \"requests\", \"calendar\", \"reports\", \"library\"]",
+            "view_all_units": 0,
+            "archived_at": null,
+            "archived_email": null,
+            "access_role_id": 5,
+            "reviewer_access": 0
+        },
+        {
+            "id": 11,
+            "name": "Phạm Trung Tính",
+            "email": "pttinh.cm@bdu.edu.vn",
+            "email_verified_at": null,
+            "password": "$2y$12$83iMfOFILxmDBkIueZDd0OiYCk1f4HsRiDGHmBmHAXYxX1lyxEqQG",
+            "remember_token": null,
+            "created_at": "2026-10-06 15:57:23",
+            "updated_at": "2026-10-06 16:04:30",
+            "department_id": 7,
+            "role": "office",
+            "active": 1,
+            "theme_color": null,
+            "board_preferences": null,
+            "font_family": "system",
+            "font_size": 16,
+            "registration_pending": 0,
+            "loading_style": "center",
+            "permissions": "[\"dashboard\", \"requests\", \"calendar\", \"approvals\", \"reports\", \"library\"]",
+            "view_all_units": 1,
+            "archived_at": null,
+            "archived_email": null,
+            "access_role_id": 3,
+            "reviewer_access": 1
+        }
+    ],
+    "settings": [
+        {
+            "key": "deadline_day",
+            "value": "5"
+        },
+        {
+            "key": "deadline_time",
+            "value": "16:00"
+        },
+        {
+            "key": "default_color",
+            "value": "#166534"
+        },
+        {
+            "key": "organization_name",
+            "value": "Phân hiệu Trường Đại học Bình Dương tại Cà Mau"
+        }
+    ],
+    "media_requests": [
+        {
+            "id": 19,
+            "title": "Hoạt động trung thu",
+            "description": "Quay dựng video",
+            "department_id": 13,
+            "creator_id": 10,
+            "contact_id": 10,
+            "assignee_id": null,
+            "status": "completed",
+            "priority": "normal",
+            "channel": "Website",
+            "event_at": "2026-10-07 15:56:00",
+            "publish_at": null,
+            "due_at": "2026-10-10 15:56:00",
+            "important": 0,
+            "progress": 100,
+            "product_notes": null,
+            "published_url": null,
+            "professional_checked_by": null,
+            "submitted_at": "2026-10-06 15:57:47",
+            "completed_at": "2026-10-06 16:22:55",
+            "created_at": "2026-10-06 15:56:35",
+            "updated_at": "2026-10-06 16:22:55",
+            "record_type": "activity",
+            "event_ends_at": "2026-10-10 15:56:00",
+            "location": "Trung tâm",
+            "activity_type": null,
+            "communication_angle": null,
+            "needs_onsite": 0,
+            "provides_materials": 0,
+            "coverage_status": "pending",
+            "approval_route": "auto",
+            "content_tags": null,
+            "media_assignee_id": null,
+            "published_at": null,
+            "coordination_mode": "autonomous",
+            "support_notes": null,
+            "task_color": "#2563eb",
+            "approved_by": 9,
+            "approved_at": "2026-10-06 16:22:29"
+        }
+    ],
+    "department_media_request": [],
+    "request_histories": [
+        {
+            "id": 47,
+            "media_request_id": 19,
+            "user_id": 10,
+            "action": "Tạo yêu cầu",
+            "from_status": null,
+            "to_status": "draft",
+            "note": null,
+            "created_at": "2026-10-06 15:56:35",
+            "updated_at": "2026-10-06 15:56:35"
+        },
+        {
+            "id": 48,
+            "media_request_id": 19,
+            "user_id": 10,
+            "action": "Gửi Văn phòng BGĐ",
+            "from_status": "draft",
+            "to_status": "submitted",
+            "note": "",
+            "created_at": "2026-10-06 15:57:47",
+            "updated_at": "2026-10-06 15:57:47"
+        },
+        {
+            "id": 49,
+            "media_request_id": 19,
+            "user_id": 9,
+            "action": "Duyệt sự kiện & chọn phương án",
+            "from_status": "submitted",
+            "to_status": "approved",
+            "note": " | Tự chủ | Hỗ trợ: Không",
+            "created_at": "2026-10-06 16:22:29",
+            "updated_at": "2026-10-06 16:22:29"
+        },
+        {
+            "id": 50,
+            "media_request_id": 19,
+            "user_id": 9,
+            "action": "Đóng sự kiện",
+            "from_status": "approved",
+            "to_status": "completed",
+            "note": "01",
+            "created_at": "2026-10-06 16:22:55",
+            "updated_at": "2026-10-06 16:22:55"
+        }
+    ],
+    "attachments": [],
+    "request_links": [],
+    "notifications": [
+        {
+            "id": "0adb9b9e-d223-4c21-9205-964f2a052c57",
+            "type": "App\\Notifications\\RequestUpdated",
+            "notifiable_type": "App\\Models\\User",
+            "notifiable_id": 11,
+            "data": "{\"request_id\":19,\"title\":\"Ho\\u1ea1t \\u0111\\u1ed9ng trung thu\",\"message\":\"\\u0110\\u00f3ng s\\u1ef1 ki\\u1ec7n\"}",
+            "read_at": null,
+            "created_at": "2026-10-06 16:22:55",
+            "updated_at": "2026-10-06 16:22:55"
+        },
+        {
+            "id": "681531ac-3e86-4745-9334-47566d16c269",
+            "type": "App\\Notifications\\RequestUpdated",
+            "notifiable_type": "App\\Models\\User",
+            "notifiable_id": 9,
+            "data": "{\"request_id\":19,\"title\":\"Ho\\u1ea1t \\u0111\\u1ed9ng trung thu\",\"message\":\"G\\u1eedi V\\u0103n ph\\u00f2ng BG\\u0110\"}",
+            "read_at": "2026-10-06 16:07:36",
+            "created_at": "2026-10-06 15:57:47",
+            "updated_at": "2026-10-06 16:07:36"
+        },
+        {
+            "id": "6c0b34d5-67a0-4042-bc09-cc6f1ca77188",
+            "type": "App\\Notifications\\RequestUpdated",
+            "notifiable_type": "App\\Models\\User",
+            "notifiable_id": 10,
+            "data": "{\"request_id\":19,\"title\":\"Ho\\u1ea1t \\u0111\\u1ed9ng trung thu\",\"message\":\"Duy\\u1ec7t s\\u1ef1 ki\\u1ec7n & ch\\u1ecdn ph\\u01b0\\u01a1ng \\u00e1n\"}",
+            "read_at": null,
+            "created_at": "2026-10-06 16:22:29",
+            "updated_at": "2026-10-06 16:22:29"
+        },
+        {
+            "id": "bb07a286-1801-41f3-a32d-3c1f64c6d99d",
+            "type": "App\\Notifications\\RequestUpdated",
+            "notifiable_type": "App\\Models\\User",
+            "notifiable_id": 11,
+            "data": "{\"request_id\":19,\"title\":\"Ho\\u1ea1t \\u0111\\u1ed9ng trung thu\",\"message\":\"C\\u00f3 s\\u1ef1 ki\\u1ec7n \\u0111\\u00e3 g\\u1eedi \\u0111ang ch\\u1edd ki\\u1ec3m duy\\u1ec7t.\"}",
+            "read_at": null,
+            "created_at": "2026-10-06 16:04:30",
+            "updated_at": "2026-10-06 16:04:30"
+        },
+        {
+            "id": "f83f3bfd-bcc8-4531-bb43-ff723089a7d6",
+            "type": "App\\Notifications\\RequestUpdated",
+            "notifiable_type": "App\\Models\\User",
+            "notifiable_id": 11,
+            "data": "{\"request_id\":19,\"title\":\"Ho\\u1ea1t \\u0111\\u1ed9ng trung thu\",\"message\":\"Duy\\u1ec7t s\\u1ef1 ki\\u1ec7n & ch\\u1ecdn ph\\u01b0\\u01a1ng \\u00e1n\"}",
+            "read_at": null,
+            "created_at": "2026-10-06 16:22:29",
+            "updated_at": "2026-10-06 16:22:29"
+        },
+        {
+            "id": "f8a42f10-98a8-45a4-987b-9969e3a64b07",
+            "type": "App\\Notifications\\RequestUpdated",
+            "notifiable_type": "App\\Models\\User",
+            "notifiable_id": 10,
+            "data": "{\"request_id\":19,\"title\":\"Ho\\u1ea1t \\u0111\\u1ed9ng trung thu\",\"message\":\"\\u0110\\u00f3ng s\\u1ef1 ki\\u1ec7n\"}",
+            "read_at": null,
+            "created_at": "2026-10-06 16:22:55",
+            "updated_at": "2026-10-06 16:22:55"
+        }
+    ]
+}
