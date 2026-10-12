@@ -166,7 +166,12 @@ class MediaRequest extends Model
 
     public function canEdit(User $user): bool
     {
-        return ($user->canReview() || in_array($user->role, [Role::Admin, Role::Office, Role::Head, Role::Staff])) && in_array($this->status, [RequestStatus::Draft, RequestStatus::NeedsInfo]) &&
+        return ($user->canReview() || in_array($user->role, [Role::Admin, Role::Office, Role::Head, Role::Staff])) && in_array($this->status, [RequestStatus::Draft, RequestStatus::Submitted, RequestStatus::NeedsInfo, RequestStatus::Approved, RequestStatus::InProgress]) &&
             ($user->canReview() || $user->isOffice() || ($user->department_id === $this->department_id && ($user->role === Role::Head || $user->id === $this->creator_id)));
+    }
+
+    public function canDelete(User $user): bool
+    {
+        return $this->canEdit($user);
     }
 }

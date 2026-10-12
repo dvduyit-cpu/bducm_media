@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\MediaRequest;
 use App\Models\User;
 use App\Services\RequestWorkflow;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -113,13 +114,28 @@ class MediaRequestController extends Controller
         DB::transaction(function () use ($data, $request, $mediaRequest) {
             $item = MediaRequest::whereKey($mediaRequest->id)->lockForUpdate()->firstOrFail();
             abort_unless($item->canEdit($request->user()), 403);
-            // A draft cannot be moved to another unit after creation.
             abort_unless((int) $data['department_id'] === $item->department_id, 422);
             $item->update($data);
             $item->histories()->create(['user_id' => $request->user()->id, 'action' => 'Cập nhật nội dung', 'note' => 'Thông tin, lịch hoặc người phối hợp đã được cập nhật.']);
         });
 
         return redirect()->route('requests.show', $mediaRequest)->with('success', 'Đã cập nhật yêu cầu.');
+    }
+
+    public function destroy(Request $request, MediaRequest $mediaRequest): RedirectResponse
+    {
+        $this->authorizeView($request, $mediaRequest);
+        abort_unless($mediaRequest->canDelete($request->user()), 403);
+        $request->validate(['confirm_delete' => 'required|accepted']);
+
+        DB::transaction(function () use ($request, $mediaRequest): void {
+            $item = MediaRequest::whereKey($mediaRequest->id)->lockForUpdate()->firstOrFail();
+            abort_unless($item->canDelete($request->user()), 403);
+            $item->delete();
+        });
+        Storage::disk('local')->deleteDirectory('requests/'.$mediaRequest->id);
+
+        return redirect()->route('requests.index')->with('success', 'Đã xóa sự kiện.');
     }
 
     public function transition(Request $request, MediaRequest $mediaRequest, RequestWorkflow $workflow)

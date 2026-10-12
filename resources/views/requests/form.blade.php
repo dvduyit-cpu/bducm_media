@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title',$item->exists ? 'Sửa sự kiện' : 'Gửi sự kiện mới')
 @section('content')
-<div class="page-heading"><div><div class="eyebrow">ĐĂNG KÝ SỰ KIỆN</div><h1>{{ $item->exists ? 'Sửa nội dung sự kiện' : 'Gửi sự kiện mới' }}</h1><p>Lưu nháp, bổ sung tài liệu rồi gửi Văn phòng BGĐ kiểm tra và duyệt.</p></div><a class="button secondary" href="{{ $item->exists ? route('requests.show',$item) : route('requests.index') }}">Quay lại</a></div>
+<div class="page-heading"><div><div class="eyebrow">ĐĂNG KÝ SỰ KIỆN</div><h1>{{ $item->exists ? 'Sửa nội dung sự kiện' : 'Gửi sự kiện mới' }}</h1><p>{{ $item->exists ? 'Cập nhật thông tin sự kiện. Thay đổi được lưu vào lịch sử xử lý.' : 'Lưu nháp, bổ sung tài liệu rồi gửi Văn phòng BGĐ kiểm tra và duyệt.' }}</p></div><a class="button secondary" href="{{ $item->exists ? route('requests.show',$item) : route('requests.index') }}">Quay lại</a></div>
 <form class="panel form-panel" method="post" action="{{ $item->exists ? route('requests.update',$item) : route('requests.store') }}">@csrf @if($item->exists)@method('PUT')@endif
 <div class="form-grid">
 <label class="full">Tên sự kiện <b>*</b><input name="title" required maxlength="255" value="{{ old('title',$item->title) }}"></label>

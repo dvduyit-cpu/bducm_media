@@ -23,6 +23,7 @@ Route::middleware(['auth', EnsureActiveUser::class, EnsureModuleAccess::class])-
     Route::get('/requests/{mediaRequest}', [MediaRequestController::class, 'show'])->name('requests.show');
     Route::get('/requests/{mediaRequest}/edit', [MediaRequestController::class, 'edit'])->name('requests.edit');
     Route::put('/requests/{mediaRequest}', [MediaRequestController::class, 'update'])->name('requests.update');
+    Route::delete('/requests/{mediaRequest}', [MediaRequestController::class, 'destroy'])->name('requests.destroy');
     Route::post('/requests/{mediaRequest}/transition', [MediaRequestController::class, 'transition'])->name('requests.transition');
     Route::post('/requests/{mediaRequest}/coordinate', [MediaRequestController::class, 'coordinate'])->name('requests.coordinate');
     Route::post('/requests/{mediaRequest}/progress', [MediaRequestController::class, 'progress'])->name('requests.progress');
