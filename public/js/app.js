@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const pinButton = document.querySelector('[data-pin-menu]');
   const desktop = window.matchMedia('(min-width: 1001px)');
   const menuKey = 'bdu-menu-' + document.body.dataset.menuUser;
+  const menuRoot = document.documentElement;
   let pinned = true, desktopVisible = true, mobileOpen = false;
   try {
     const saved = JSON.parse(localStorage.getItem(menuKey));
@@ -12,9 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderMenu = () => {
     if (!sidebar) return;
     const visible = desktop.matches ? desktopVisible : mobileOpen;
-    document.body.classList.toggle('menu-visible', visible);
-    document.body.classList.toggle('menu-pinned', desktop.matches && visible && pinned);
-    document.body.classList.toggle('menu-open', visible && (!desktop.matches || !pinned));
+    menuRoot.classList.toggle('menu-visible', visible);
+    menuRoot.classList.toggle('menu-pinned', desktop.matches && visible && pinned);
+    menuRoot.classList.toggle('menu-open', visible && (!desktop.matches || !pinned));
     menuButton?.setAttribute('aria-expanded', String(visible));
     sidebar.inert = !visible;
     sidebar.setAttribute('aria-hidden', String(!visible));
@@ -43,6 +44,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.sidebar .nav-link').forEach(link => link.addEventListener('click', () => { if (!desktop.matches || !pinned) closeMenu(); }));
   desktop.addEventListener('change', () => { mobileOpen = false; renderMenu(); });
   renderMenu();
+  requestAnimationFrame(() => requestAnimationFrame(() => menuRoot.classList.add('menu-ready')));
+  const groupKey = 'bdu-menu-groups-' + document.body.dataset.menuUser;
+  const groups = {};
+  document.querySelectorAll('[data-toggle-group]').forEach(button => {
+    const group = button.dataset.toggleGroup;
+    const renderGroup = () => {
+      const expanded = menuRoot.getAttribute('data-menu-' + group) !== 'closed';
+      groups[group] = expanded;
+      button.setAttribute('aria-expanded', String(expanded));
+    };
+    renderGroup();
+    button.addEventListener('click', () => {
+      menuRoot.setAttribute('data-menu-' + group, groups[group] ? 'closed' : 'open');
+      renderGroup();
+      try { localStorage.setItem(groupKey, JSON.stringify(groups)); } catch (_) {}
+    });
+  });
   const colorInput = document.getElementById('theme-color');
   const colorHex = document.getElementById('theme-color-hex');
   const setColor = color => {

@@ -20,4 +20,21 @@ class Setting extends Model
     {
         return static::find($key)?->value ?? $default;
     }
+
+    public static function softwareName(): string
+    {
+        return static::valueOf('software_name', 'BDU Media');
+    }
+
+    public static function footerText(): string
+    {
+        return static::valueOf('footer_text', static::valueOf('organization_name', 'BDU Media'));
+    }
+
+    public static function logoUrl(): ?string
+    {
+        $path = static::valueOf('logo_path');
+
+        return $path !== '' ? route('branding.logo', ['v' => basename($path)]) : null;
+    }
 }

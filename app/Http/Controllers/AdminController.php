@@ -8,13 +8,60 @@ use App\Models\MediaRequest;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\RequestUpdated;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminController extends Controller
 {
+    public function logo(): StreamedResponse
+    {
+        $path = Setting::valueOf('logo_path');
+        abort_unless(preg_match('/^branding\/[a-zA-Z0-9]+\.(png|jpg|jpeg|webp)$/', $path) && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response($path);
+    }
+
+    public function saveGeneralSettings(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+        $data = $request->validate([
+            'software_name' => 'required|string|max:120',
+            'footer_text' => 'nullable|string|max:500',
+            'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp|extensions:png,jpg,jpeg,webp|max:2048|dimensions:max_width=4096,max_height=4096',
+            'remove_logo' => 'nullable|boolean',
+        ]);
+        $oldPath = Setting::valueOf('logo_path');
+        $newPath = $request->hasFile('logo') ? $request->file('logo')->store('branding', 'local') : null;
+        if ($request->hasFile('logo') && ! $newPath) {
+            throw ValidationException::withMessages(['logo' => 'Không thể lưu logo. Vui lòng thử lại.']);
+        }
+        try {
+            DB::transaction(function () use ($request, $data, $newPath): void {
+                foreach (['software_name' => $data['software_name'], 'footer_text' => $data['footer_text'] ?? ''] as $key => $value) {
+                    Setting::updateOrCreate(['key' => $key], ['value' => $value]);
+                }
+                if ($newPath || $request->boolean('remove_logo')) {
+                    Setting::updateOrCreate(['key' => 'logo_path'], ['value' => $newPath ?: '']);
+                }
+            });
+        } catch (\Throwable $exception) {
+            if ($newPath) {
+                Storage::disk('local')->delete($newPath);
+            }
+            throw $exception;
+        }
+        if (($newPath || $request->boolean('remove_logo')) && preg_match('/^branding\/[a-zA-Z0-9]+\.(png|jpg|jpeg|webp)$/', $oldPath)) {
+            Storage::disk('local')->delete($oldPath);
+        }
+
+        return back()->with('success', 'Đã lưu cài đặt chung.');
+    }
+
     public function settings(Request $request)
     {
         return view('settings', ['settings' => Setting::pluck('value', 'key')]);

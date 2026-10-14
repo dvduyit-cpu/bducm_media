@@ -2,6 +2,18 @@
 @section('title','Cài đặt giao diện')
 @section('content')
 <div class="page-heading"><div><div class="eyebrow">CÁ NHÂN HÓA KHÔNG GIAN</div><h1>Cài đặt giao diện</h1><p>Chọn màu phù hợp với bạn và thiết lập nhận diện của đơn vị.</p></div></div>
+@if(auth()->user()->isAdmin())
+<form action="{{ route('settings.general') }}" method="post" enctype="multipart/form-data" class="panel form-panel" id="general-settings">@csrf
+<div class="form-section-title"><span>⚙</span><div><h2>Cài đặt chung</h2><p>Logo, tên phần mềm và footer áp dụng cho toàn hệ thống và trang đăng nhập.</p></div></div>
+<div class="form-grid">
+<label class="full">Tên phần mềm <b>*</b><input name="software_name" required maxlength="120" value="{{ old('software_name',\App\Models\Setting::softwareName()) }}"></label>
+<div class="full branding-preview">@include('partials.brand-logo')<strong>{{ \App\Models\Setting::softwareName() }}</strong></div>
+<label class="full">Tải logo mới<input type="file" name="logo" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"><small>PNG, JPG hoặc WebP, tối đa 2 MB. Để trống để giữ logo hiện tại.</small></label>
+@if(\App\Models\Setting::logoUrl())<label class="check-label full"><input type="checkbox" name="remove_logo" value="1">Xóa logo hiện tại và dùng logo mặc định</label>@endif
+<label class="full">Nội dung footer<textarea name="footer_text" maxlength="500" rows="3">{{ old('footer_text',\App\Models\Setting::footerText()) }}</textarea><small>Để trống nếu muốn ẩn nội dung footer.</small></label>
+</div><div class="form-actions"><button class="button primary" type="submit">Lưu cài đặt chung</button></div>
+</form>
+@endif
 <form action="{{ route('settings.save') }}" method="post" class="panel form-panel">@csrf<div class="form-section-title"><span>01</span><div><h2>Màu giao diện cá nhân</h2><p>Áp dụng trên máy tính, máy tính bảng và điện thoại sau khi đăng nhập.</p></div></div>
 <div class="theme-swatches">@foreach(['#2563eb'=>'Xanh dương','#0f766e'=>'Xanh ngọc','#166534'=>'Xanh lá','#7c3aed'=>'Tím','#be185d'=>'Hồng','#c2410c'=>'Cam','#b91c1c'=>'Đỏ','#334155'=>'Xám'] as $color=>$label)<button type="button" class="theme-swatch" data-color="{{ $color }}" style="--swatch:{{ $color }}" aria-label="{{ $label }}" title="{{ $label }}" aria-pressed="false"><span class="swatch-dot"></span><span>{{ $label }}</span></button>@endforeach</div>
 @php($selectedColor = old('theme_color',auth()->user()->theme_color ?? $settings['default_color'] ?? '#2563eb'))

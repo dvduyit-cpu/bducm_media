@@ -10,6 +10,8 @@ use App\Http\Middleware\EnsureActiveUser;
 use App\Http\Middleware\EnsureModuleAccess;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/branding/logo', [AdminController::class, 'logo'])->name('branding.logo');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'authenticate'])->name('login.submit');
@@ -38,6 +40,7 @@ Route::middleware(['auth', EnsureActiveUser::class, EnsureModuleAccess::class])-
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
     Route::get('/help', [HelpController::class, 'index'])->name('help');
     Route::post('/settings', [AdminController::class, 'saveSettings'])->name('settings.save');
+    Route::post('/settings/general', [AdminController::class, 'saveGeneralSettings'])->name('settings.general');
     Route::get('/users', [AdminController::class, 'users'])->name('users');
     Route::post('/users', [AdminController::class, 'saveUser'])->name('users.store');
     Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('users.destroy');

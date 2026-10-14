@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-<title>Đăng nhập · BDU Media</title>
+<title>Đăng nhập · {{ \App\Models\Setting::softwareName() }}</title>
 <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
 <script defer src="{{ asset('js/app.js') }}?v={{ filemtime(public_path('js/app.js')) }}"></script>
 </head>
 <body class="auth-login">
 <div class="auth-shell">
 <aside class="auth-story">
-<a class="brand" href="{{ route('login') }}"><span class="brand-mark">b<span>du</span><i></i></span><span><strong>BDU Media</strong><small>ĐIỀU PHỐI TRUYỀN THÔNG</small></span></a>
+<a class="brand" href="{{ route('login') }}">@include('partials.brand-logo')<span><strong>{{ \App\Models\Setting::softwareName() }}</strong><small>ĐIỀU PHỐI TRUYỀN THÔNG</small></span></a>
 <div class="auth-story-copy"><h1>Chào mừng trở lại!</h1><p>Kết nối cùng phòng ban, phối hợp công việc và cập nhật sự kiện trong một không gian chung.</p><a class="auth-outline-button" href="#login-form">Bắt đầu công việc <x-icon name="arrow" size="17"/></a></div>
 <div class="auth-organization">{{ \App\Models\Setting::valueOf('organization_name','Phân hiệu Trường Đại học Bình Dương') }}</div>
 </aside>
@@ -28,6 +28,6 @@
 <p class="auth-support">Cần đặt lại mật khẩu? Liên hệ admin tổng.</p>
 </main>
 </div>
-<footer class="auth-footer">BDU Media · Quản lý tập trung, phối hợp hiệu quả</footer>
+<footer class="auth-footer">{{ \App\Models\Setting::footerText() }}</footer>
 <div class="page-loading" data-page-loading hidden><div class="page-loading-bar"></div><div class="page-loading-label" role="status" aria-live="polite"><span class="page-loading-spinner" aria-hidden="true"></span><span data-loading-label>Đang xử lý…</span></div></div>
 </body></html>
